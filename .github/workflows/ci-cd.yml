@@ -1,0 +1,67 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [ dev, master ]
+  pull_request:
+    branches: [ dev, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-14
+          - windows-2022
+        java-version: [23]
+        java-distribution: [temurin]
+    runs-on: ${{ matrix.os }}
+    concurrency:
+      group: build-${{ github.workflow }}-${{ matrix.os }}-${{ matrix.java-version }}-${{ matrix.java-distribution }}-${{ github.event.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build using Gradle
+        uses: DanySK/build-check-deploy-gradle-action@3.7.20
+        with:
+          java-version: ${{ matrix.java-version }}
+          java-distribution: ${{ matrix.java-distribution }}
+          should-run-codecov: false
+          retries-on-failure: 3
+          check-command: ":"
+
+  release:
+    name: Release
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - name: Install dependencies
+        run: npm install
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
