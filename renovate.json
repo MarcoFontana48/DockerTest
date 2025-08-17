@@ -2,5 +2,46 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "baseBranchPatterns": [
+    "dev"
+  ],
+  "automergeStrategy": "merge-commit",
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "patch",
+        "pin"
+      ],
+      "automerge": true,
+      "automergeType": "branch",
+      "addLabels": [
+        "patch-update"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "automerge": true,
+      "automergeType": "branch",
+      "addLabels": [
+        "minor-update"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": true,
+      "automergeType": "branch",
+      "addLabels": [
+        "major-update"
+      ]
+    }
   ]
 }
