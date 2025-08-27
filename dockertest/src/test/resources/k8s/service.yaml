@@ -1,0 +1,100 @@
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring-app
+---
+# service-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service
+  namespace: monitoring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service
+  template:
+    metadata:
+      labels:
+        app: service
+    spec:
+      containers:
+        - name: service
+          image: marcofontana17/ausl_cce_prototipo:service-dev-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+#          env:
+#            - name: LOG_LEVEL
+#              value: "debug"
+#            - name: LOG_ADD_SOURCE
+#              value: "false"
+#          livenessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            failureThreshold: 5
+#          readinessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#            initialDelaySeconds: 10
+#            periodSeconds: 5
+#            timeoutSeconds: 3
+#            failureThreshold: 5
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+---
+# service-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: service
+  namespace: monitoring-app
+spec:
+  selector:
+    app: service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+# service-hpa.yaml (horizontal pod autoscaler for service)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: service-hpa
+  namespace: monitoring-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: service
+  minReplicas: 1  # minimum number of replicas to scale down to
+  maxReplicas: 5  # maximum number of replicas to scale up to
+  metrics:
+    # scale based on CPU utilization, others can be added as needed, like 'memory'
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # target CPU utilization percentage to trigger scaling
+  behavior:
+    # define custom scaling behavior (optional)
+    scaleUp:
+      stabilizationWindowSeconds: 0    # scale up immediately
+    scaleDown:
+      stabilizationWindowSeconds: 60   # wait 1 min before scaling down
+---

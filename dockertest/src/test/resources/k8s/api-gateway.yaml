@@ -1,0 +1,118 @@
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring-app
+---
+# api-gateway-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: monitoring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: marcofontana17/ausl_cce_prototipo:api_gateway-dev-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+#          env:
+#            - name: LOG_LEVEL
+#              value: "debug"
+#            - name: LOG_ADD_SOURCE
+#              value: "false"
+#          livenessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            failureThreshold: 5
+#          readinessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#            initialDelaySeconds: 10
+#            periodSeconds: 5
+#            timeoutSeconds: 3
+#            failureThreshold: 5
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+#      initContainers:
+#        - name: wait-for-service
+#          image: busybox:1.35
+#          imagePullPolicy: Always
+#          command: ['sh', '-c']
+#          args:
+#            - |
+#              echo "Waiting for service to be ready..."
+#              for i in $(seq 1 60); do
+#                if wget --spider --quiet --timeout=3 --tries=1 http://service:8080/health 2>/dev/null; then
+#                  echo "Service is ready!"
+#                  exit 0
+#                fi
+#                echo "Service not ready, waiting... ($i/60)"
+#                sleep 5
+#              done
+#              echo "Timeout waiting for service"
+#              exit 1
+---
+# api-gateway-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: monitoring-app
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 31080
+  type: NodePort
+---
+# api-gateway-hpa.yaml (horizontal pod autoscaler for api-gateway)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: monitoring-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 1  # minimum number of replicas to scale down to
+  maxReplicas: 20 # maximum number of replicas to scale up to
+  metrics:
+    # scale based on CPU utilization, others can be added as needed, like 'memory'
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # target CPU utilization percentage to trigger scaling
+  behavior:
+    # define custom scaling behavior (optional)
+    scaleUp:
+      stabilizationWindowSeconds: 0    # scale up immediately
+    scaleDown:
+      stabilizationWindowSeconds: 60   # wait 1 min before scaling down
