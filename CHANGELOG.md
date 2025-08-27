@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/MarcoFontana48/DockerTest/compare/v1.0.1...v1.1.0) (2025-08-27)
+
+
+### Features
+
+* add kubernetes support ([0293fe0](https://github.com/MarcoFontana48/DockerTest/commit/0293fe053cdef6f52ab7db8e982132061aec1f08))
+
 ## [1.0.1](https://github.com/MarcoFontana48/DockerTest/compare/v1.0.0...v1.0.1) (2025-08-27)
 
 
