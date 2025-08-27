@@ -7,6 +7,11 @@ Library to enable tests using Docker in a simple and automated way.
 
 ## How to use it
 - Import the library in your project by adding the dependency to your `build.gradle` file
+### Docker tests
 - Create a test class that extends `DockerTest`
 - Add a docker-compose file in the `src/test/resources` directory of your project, any name is fine, but it must be a valid docker-compose file
 - Now you can use the methods provided by the `DockerTest` class to run tests with Docker; for example, you can use the `dockerComposeUp(...)` method passing the name of the docker-compose file, and it will start the containers defined in the file. You can also use `dockerComposeDown(...)` to stop and remove the containers.
+### Kubernetes tests
+- Create a test class that extends `KubernetesTest`
+- Add Kubernetes files in the `src/test/resources` directory of your project, any name is fine, but they must be valid Kubernetes files
+- Now you can use the methods provided by the `KubernetesTest` class to run tests with Kubernetes; for example, you can use the `executeKubectlApplyAndWait(...)` method passing the directory where the Kubernetes files are located, and it will apply the configurations defined in the files. You can also use `executeKubectlDelete(...)` to delete the resources created by the configurations.
