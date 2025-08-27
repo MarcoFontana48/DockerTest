@@ -4,7 +4,7 @@
     "config:recommended"
   ],
   "baseBranchPatterns": [
-    "dev"
+    "master"
   ],
   "automergeStrategy": "merge-commit",
   "platformAutomerge": true,
