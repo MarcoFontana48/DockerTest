@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/MarcoFontana48/DockerTest/compare/v1.0.0...v1.0.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.jetbrains.kotlin:kotlin-gradle-plugin to v2.2.10 ([4ad8b34](https://github.com/MarcoFontana48/DockerTest/commit/4ad8b342fa91b088e66f013350fe8dd53f571c92))
+
 # 1.0.0 (2025-08-17)
 
 
