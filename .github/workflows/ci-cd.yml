@@ -33,7 +33,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build using Gradle
-        uses: DanySK/build-check-deploy-gradle-action@4.0.43
+        uses: DanySK/build-check-deploy-gradle-action@4.0.45
         with:
           java-version: ${{ matrix.java-version }}
           java-distribution: ${{ matrix.java-distribution }}
